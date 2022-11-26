@@ -3,6 +3,7 @@ let state = {
   inputValue: localStorage.getItem("inputValue"),
   loading: false,
   products: [],
+  errorMessage: "",
 };
 
 function setState(newState) {
@@ -26,8 +27,11 @@ function onStateChange(prevState, nextState) {
     fetch("https://dummyjson.com/products/search?q=" + state.inputValue)
       .then((res) => res.json())
       .then((data) => {
-        setState({ loading: false, products: data.products });
-      });
+        setState({ loading: false, products: data.products, errorMessage: "" });
+      })
+      .catch((err) =>
+        setState({ loading: false, products: [], errorMessage: err.message })
+      );
   }
 }
 
@@ -72,10 +76,15 @@ function ProductList() {
   const emptyText = document.createElement("p");
   emptyText.textContent = "Product Empty";
 
+  const errorText = document.createElement("p");
+  errorText.textContent = state.errorMessage;
+
   const div = document.createElement("div");
 
   if (state.loading) {
     div.append(loadingText);
+  } else if (state.errorMessage !== "") {
+    div.append(errorText);
   } else if (state.products.length == 0) {
     div.append(emptyText);
   } else {
